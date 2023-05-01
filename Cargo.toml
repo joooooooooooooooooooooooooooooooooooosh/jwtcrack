@@ -1,0 +1,14 @@
+[package]
+name = "jwtcrack"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.2.5", features = ["derive"] }
+hmac = "0.12.1"
+json = "0.12.4"
+jwt = "0.16.0"
+rayon = "1.7.0"
+sha2 = "0.10.6"
