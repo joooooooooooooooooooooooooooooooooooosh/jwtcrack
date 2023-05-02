@@ -26,6 +26,8 @@ fn main() {
     let args = Args::parse();
     let wordlist = BufReader::new(File::open(args.wordlist).expect("wordlist should exist"));
 
+    let (header, claims, signature) = split_jwt(&args.jwt).expect("bad jwt");
+
     wordlist.lines().par_bridge().for_each(|word| {
         let Ok(word) = word else {
             return;
@@ -33,7 +35,10 @@ fn main() {
 
         let key: Hmac<Sha256> = Hmac::new_from_slice(word.as_bytes()).expect("this shouldn't fail");
 
-        if verify(args.jwt.as_ref(), &key).is_ok() {
+        if (&key as &dyn VerifyingAlgorithm)
+            .verify(header, claims, signature)
+            .unwrap_or(false)
+        {
             println!("found secret: {word:?}");
             exit(0)
         }
@@ -42,15 +47,11 @@ fn main() {
     println!("No secret found, try another wordlist");
 }
 
-fn verify(jwt: &str, key: &impl VerifyingAlgorithm) -> Result<(), Box<dyn Error>> {
+fn split_jwt(jwt: &str) -> Result<(&str, &str, &str), Box<dyn Error>> {
     let mut components = jwt.split('.');
     let header = components.next().ok_or(jwt::Error::NoHeaderComponent)?;
     let claims = components.next().ok_or(jwt::Error::NoClaimsComponent)?;
     let signature = components.next().ok_or(jwt::Error::NoSignatureComponent)?;
 
-    if key.verify(header, claims, signature)? {
-        Ok(())
-    } else {
-        Err(jwt::Error::Format.into())
-    }
+    Ok((header, claims, signature))
 }
