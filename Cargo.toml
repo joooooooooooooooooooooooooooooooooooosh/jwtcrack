@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.2.5", features = ["derive"] }
 hmac = "0.12.1"
-json = "0.12.4"
 jwt = "0.16.0"
 rayon = "1.7.0"
 sha2 = "0.10.6"
